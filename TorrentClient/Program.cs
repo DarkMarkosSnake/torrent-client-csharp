@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.Web;
+using BencodeNET.Objects;
 using BencodeNET.Torrents;
 using BencodeNET.Parsing;
 
@@ -22,8 +24,7 @@ namespace TorrentClient
                 new List<byte>(torrent.OriginalInfoHashBytes),
                 new List<byte>(torrent.Pieces),
                 torrent.PieceSize,
-                torrent.TotalSize,
-                torrent.File.FileName
+                torrent.TotalSize
             );
 
             var queryStringCollection = HttpUtility.ParseQueryString(string.Empty);
@@ -32,7 +33,13 @@ namespace TorrentClient
             var b = new byte[20];
             rnd.NextBytes(b);
             
-            queryStringCollection.Add("info_hash", System.Text.Encoding.ASCII.GetString(torrentFile.InfoHash.ToArray()));
+            var bString = new BString("E2467CBF021192C241367B892230DC1E05C0580E");
+            
+            SHA1Managed sha1 = new SHA1Managed();
+
+            var computedSha1 = sha1.ComputeHash(bString.EncodeAsBytes());
+            
+            queryStringCollection.Add("info_hash", System.Text.Encoding.ASCII.GetString(computedSha1));
             // queryStringCollection.Add("peer_id", System.Text.Encoding.ASCII.GetString(b));
             queryStringCollection.Add("peer_id", "-UT3000-%ced%f6_%df%ba%d2%b5Q%e7%14%7d");
             queryStringCollection.Add("port", "6881");
